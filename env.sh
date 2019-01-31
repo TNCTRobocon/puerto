@@ -2,10 +2,10 @@
 LOCAL=${HOME}/local
 THREAD=-j4
 
-# install 
+# install by apt
 apt update
 apt upgrade -y
-apt install git cmake gcc g++ -y
+apt install git  gcc g++ -y
 
 mkdir ${LOCAL} -p
 # install boost
@@ -24,6 +24,14 @@ if [ ! -d ${LOCAL}/boost ]; then
     fi
     mkdir ${HOME}/local/boost -p
     ./b2 install ${THREAD} --prefix=${HOME}/local/boost 
+fi
+
+# cmake
+if [ ! -d ${LOCAL}/CMake ]; then 
+    cd ${LOCAL}
+    git clone https://github.com/Kitware/CMake.git
+    cd CMake
+    ./bootstrap && make ${THREAD} && make install ${THREAD}
 fi
 
 # install libzmq
