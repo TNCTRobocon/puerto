@@ -19,7 +19,6 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 # c++ librarys
 ## zeromq binded for cpp
-set(CPPZMQ_ROOT ${LOCAL}/cppzmq)
 find_package(cppzmq)
 target_link_libraries(Puerto cppzmq)
 
@@ -27,4 +26,4 @@ set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME     ON)
 set(BOOST_ROOT ${LOCAL}/boost)
-find_package(Boost 1.69.0 REQUIRED COMPONENTS date_time system)
+find_package(Boost 1.65.1)
