@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace Boot {
+namespace BindJson {
 
 class TreeBase {
 public:

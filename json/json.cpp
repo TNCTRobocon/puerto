@@ -5,7 +5,7 @@
 #include <sstream>
 using namespace std;
 
-namespace Boot {
+namespace BindJson {
 
 bool is_integer(const string& text) {
     auto sign = [](string::const_iterator& it) {
@@ -27,8 +27,7 @@ bool is_integer(const string& text) {
     auto it = text.begin();
     if (sign(it); it != text.end()) return false;
     if (!digit(it)) return false;
-    while (digit(it) && it != text.end())
-        ;
+    while (digit(it) && it != text.end());
     return it == text.end();
 }
 
@@ -68,11 +67,9 @@ bool is_real(const string& text) {
 
     auto it = text.begin();
     if (sign(it); it != text.end()) return false;
-    while (digit(it) && it != text.end())
-        ;
+    while (digit(it) && it != text.end());
     if (point(it) && it != text.end()) {
-        while (digit(it) && it != text.end())
-            ;
+        while (digit(it) && it != text.end());
     }
     if (exp(it) && it != text.end()) {
         sign(it);
