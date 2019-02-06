@@ -10,70 +10,75 @@
 
 namespace Boot {
 
-class BootFlagBase {
+class FlagBase {
 public:
     const std::string usage;
-    BootFlagBase(const std::string& _usage = "") : usage(_usage) {}
-    BootFlagBase(const BootFlagBase&) = default;
-    virtual ~BootFlagBase() = default;
+    FlagBase(const std::string& _usage = "") : usage(_usage) {}
+    FlagBase(const FlagBase&) = default;
+    virtual ~FlagBase() = default;
     virtual void Set(const std::string&) {}
     virtual std::string GetUsage() const { return usage; }
 };
 
-class BootFlagString : public BootFlagBase {
+class FlagString : public FlagBase {
     std::string& value;
-
+    
 public:
-    BootFlagString(std::string& _value, const std::string& _usage)
-        : BootFlagBase(_usage), value(_value) {}
+    FlagString(std::string& _value, const std::string& _usage)
+        : FlagBase(_usage), value(_value) {}
     virtual void Set(const std::string& inst) { value = inst; }
 };
 
-class BootFlagInt : public BootFlagBase {
+class FlagInt : public FlagBase {
     int& value;
 
 public:
-    BootFlagInt(int& _value, const std::string& _usage)
-        : BootFlagBase(_usage), value(_value) {}
+    
+FlagInt(int& _value, const std::string& _usage)
+        : FlagBase(_usage), value(_value) {}
     virtual void Set(const std::string& inst){
         value = std::stoi(inst);
     }
 };
 
-class BootFlagBool : public BootFlagBase {
+class FlagBool : public FlagBase {
     bool& value;
 
 public:
-    BootFlagBool(bool& _value, const std::string& _usage)
-        : BootFlagBase(_usage), value(_value) {}
+    FlagBool(bool& _value, const std::string& _usage)
+        : FlagBase(_usage), value(_value) {}
     virtual void Set(const std::string& inst);
     void Set(bool x){
         value=x;
     }
 };
 
-class BootFlags {
-    mutable std::unordered_map<std::string, BootFlagBase*> flags;
+class Flags {
+    mutable std::unordered_map<std::string, FlagBase*> flags;
 
 public:
-    BootFlags() = default;
-    BootFlags(const BootFlags&) = delete;
-    virtual ~BootFlags();
+    Flags() = default;
+    Flags(const Flags&) = delete;
+    virtual ~Flags();
     // Add
     void Add(const std::string& key,
              std::string& value,
              const std::string& usage) {
-        flags.emplace(key, new BootFlagString(value, usage));
+        flags.emplace(key, new FlagString(value, usage));
     }
     void Add(const std::string& key, bool& value, const std::string& usage) {
-        flags.emplace(key, new BootFlagBool(value, usage));
+        flags.emplace(key, new FlagBool(value, usage));
     }
     void Add(const std::string& key, int& value, const std::string& usage) {
-        flags.emplace(key, new BootFlagInt(value, usage));
+        flags.emplace(key, new 
+    FlagInt(value, usage));
     }
     // Parse
     void Parse(int argc, char** argv);
 };
+
+
+
 
 }  // namespace Boot
 #endif

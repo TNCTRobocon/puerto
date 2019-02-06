@@ -7,7 +7,7 @@
 using namespace std;
 namespace Boot {
 
-void BootFlagBool::Set(const std::string& inst) {
+void FlagBool::Set(const std::string& inst) {
     if (inst == "true") {
         value = true;
     } else if (inst == "false") {
@@ -17,13 +17,13 @@ void BootFlagBool::Set(const std::string& inst) {
     }
 }
 
-BootFlags::~BootFlags() {
+Flags::~Flags() {
     for (auto it : flags) {
         delete it.second;
     }
 }
 
-void BootFlags::Parse(int argc, char** argv) {
+void Flags::Parse(int argc, char** argv) {
     for (int pos = 1; pos < argc; pos++) {
         string line = argv[pos];
         if (!line.compare(0, 2, "--")) {
@@ -44,5 +44,9 @@ void BootFlags::Parse(int argc, char** argv) {
         }
     }
 }
+
+
+
+
 
 }  // namespace Boot
