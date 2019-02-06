@@ -1,6 +1,4 @@
-#include "boot.hpp"
-#include <string.h>
-#include <algorithm>
+#include "flags.hpp"
 #include <iostream>
 #include <istream>
 #include <sstream>
