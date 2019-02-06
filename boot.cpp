@@ -1,18 +1,48 @@
 #include "boot.hpp"
 #include <string.h>
-
+#include <algorithm>
+#include <iostream>
+#include <istream>
+#include <sstream>
 using namespace std;
+namespace Boot {
 
-void BootOption::Parse(int argc,char** argv){
-    for (int idx=1;idx<argc;idx++){
-        char* it=argv[idx];
-        if (!strncmp(it,"--",2)){
-            it+=2;
-            char *key=strtok(it,"="),*value=strtok(NULL,"=");
-            auto target = list.find(string(key));
-            if (target!=list.end()){
-                target->second->Parse(string(value));
+void BootFlagBool::Set(const std::string& inst) {
+    if (inst == "true") {
+        value = true;
+    } else if (inst == "false") {
+        value = false;
+    } else {
+        value = stoi(inst) != 0;
+    }
+}
+
+BootFlags::~BootFlags() {
+    for (auto it : flags) {
+        delete it.second;
+    }
+}
+
+void BootFlags::Parse(int argc, char** argv) {
+    for (int pos = 1; pos < argc; pos++) {
+        string line = argv[pos];
+        if (!line.compare(0, 2, "--")) {
+            // keyとvalueを抽出
+            stringstream ss(line.substr(2));
+            string key, value;
+            if (getline(ss, key, '=')) {
+                getline(ss, value, '=');
+            }
+            //検索
+            if (key == "help") {
+                for (auto pair : flags) {
+                    cout << pair.first << "\t" << pair.second->GetUsage();
+                }
+            } else if (auto it = flags.find(key); it != flags.end()) {
+                it->second->Set(value);
             }
         }
     }
 }
+
+}  // namespace Boot
