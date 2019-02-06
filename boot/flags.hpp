@@ -20,7 +20,6 @@ public:
 
 class FlagString : public FlagBase {
     std::string& value;
-    
 public:
     FlagString(std::string& _value, const std::string& _usage)
         : FlagBase(_usage), value(_value) {}

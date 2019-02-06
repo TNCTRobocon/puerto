@@ -1,17 +1,18 @@
 #include <iostream>
 #include <thread>
 #include <zmq.hpp>
-#include "boot/flags.hpp"
+#include "boot/json.hpp"
 
 
 using namespace std;
 using namespace Boot;
 int main(int argc, char**argv) {
-    Flags flags;
-    std::string test;
-    flags.Add("test",test,"for test");
-    flags.Parse(argc,argv);
-    cout<<test<<endl;
+    cout<<"run"<<endl;
+    std::string value="abc";
+    TreeString test(value);
+    cout<<test.Serialize()<<endl;
+    test.Deserialize("\"def\"");
+    cout<<test.Serialize()<<endl;
     return 0;
 }
 
