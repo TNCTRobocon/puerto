@@ -2,8 +2,6 @@
 #ifndef __BOOT_HEAER_GUARD__
 #define __BOOT_HEADR_GUARD__
 
-#include <functional>
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>

@@ -12,7 +12,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-long-long -pedantic")
 
 
-add_executable(Puerto  main.cpp boot.cpp)
+add_executable(puerto  main.cpp)
+add_subdirectory(boot)
+target_link_libraries(puerto boot)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -20,7 +22,7 @@ include(CPack)
 # c++ librarys
 ## zeromq binded for cpp
 find_package(cppzmq)
-target_link_libraries(Puerto cppzmq)
+target_link_libraries(puerto cppzmq)
 
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
