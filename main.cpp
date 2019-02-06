@@ -5,7 +5,7 @@
 
 
 using namespace std;
-using namespace Boot;
+using namespace BindJson;
 int main(int argc, char**argv) {
     cout<<"run"<<endl;
     std::string value="abc";
