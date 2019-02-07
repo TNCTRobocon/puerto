@@ -17,7 +17,7 @@ struct Region final {
     iterator begin, end;
     Region(const std::wstring &text) : begin(text.cbegin()), end(text.cend()) {}
     Region(iterator _begin, iterator _end) : begin(_begin), end(_end) {}
-    Region(const Region &orign) = default;
+    Region(const Region &orign) :begin(orign.begin),end(orign.end){}
     ~Region() = default;
     //演算子
     Region operator=(const Region &orign) {
@@ -69,6 +69,10 @@ struct Region final {
     bool IsActive() const {
         return begin < end;
     }
+    //読み進んだ文を返す
+    Region Difference(const Region &changed) const {
+        return Region(begin, min(changed.begin , end));
+    }
 };
 
 class ParserBase {
@@ -88,10 +92,10 @@ public:
     CharactorItem(wchar_t _value) : value(_value) {}
     CharactorItem(const CharactorItem &) = default;
     virtual ~CharactorItem() = default;
-    virtual Region operator()(const Region &reg) const {
+    virtual Region operator() (const Region &reg) const {
         return (reg.IsActive() && (*reg == value)) ? reg + 1 : reg;
-    }
-};
+}
+};  // namespace BindJson::Parser
 
 inline ParserPointer Item(wchar_t c) {
     return ParserPointer(std::make_shared<CharactorItem>(c));
@@ -111,6 +115,10 @@ inline ParserPointer List(const std::wstring &list) {
     return ParserPointer(std::make_shared<CharactorList>(list));
 }
 
+inline ParserPointer Sign() {
+    return ParserPointer(std::make_shared<CharactorList>(L"+-"));
+}
+
 class CharactorRange : public ParserBase {
     const wchar_t begin, end;
 
@@ -127,6 +135,23 @@ public:
 inline ParserPointer Range(wchar_t begin, wchar_t end) {
     return ParserPointer(std::make_shared<CharactorRange>(begin, end));
 }
+
+inline ParserPointer Digit() {
+    return ParserPointer(std::make_shared<CharactorRange>(L'0', L'9'));
+}
+
+class ParserFunction : public ParserBase {
+    std::function<bool(wchar_t)> condition;
+
+public:
+    ParserFunction(const std::function<bool(wchar_t)> &_condition)
+        : condition(_condition) {}
+    ParserFunction(const ParserFunction &) = default;
+    virtual ~ParserFunction() = default;
+    virtual Region operator()(const Region &now) const {
+        return (now.IsActive() && condition(*now)) ? now + 1 : now;
+    }
+};
 
 class ParserSkip : public ParserBase {
     const unsigned int n;  // n回
@@ -197,7 +222,6 @@ public:
 inline ParserPointer operator*(ParserPointer a, unsigned int n) {
     return ParserPointer(std::make_shared<ParserSome>(a, n));
 }
-
-}  // namespace BindJson::Parser
+}
 
 #endif

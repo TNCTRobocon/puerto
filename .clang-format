@@ -6,3 +6,4 @@ AllowShortIfStatementsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
+PointerAlignment: Right

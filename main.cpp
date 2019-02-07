@@ -2,17 +2,19 @@
 #include <thread>
 #include <zmq.hpp>
 #include "json/json.hpp"
-
+#include "json/parser.hpp"
 
 using namespace std;
-using namespace BindJson;
+using namespace BindJson::Parser;
 int main(int argc, char**argv) {
-    cout<<"run"<<endl;
-    std::string value="abc";
-    TreeString test(value);
-    cout<<test.Serialize()<<endl;
-    test.Deserialize("\"def\"");
-    cout<<test.Serialize()<<endl;
+    wstring line;
+    while (getline(wcin,line)){
+        auto now = Region(line);
+        wcout<<now.ToString()<<endl;
+        auto next = Item(L'a')->operator()(now);
+        wcout<<now.Difference(next).ToString();
+        
+    }
     return 0;
 }
 
