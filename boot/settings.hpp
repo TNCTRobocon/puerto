@@ -31,6 +31,11 @@ public:
 };
 
 extern std::unique_ptr<Setting> settings;
+static inline std::unique_ptr<Setting> CreateSetting(const std::string& filename){
+    return std::make_unique<Setting>(filename);
+}
+
+
 
 }  // namespace Boot
 
