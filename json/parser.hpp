@@ -8,25 +8,26 @@
 #include <cctype>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
-
+#include "lagy.hpp"
 namespace BindJson ::Parser {
 
 struct Region final {
     using iterator = std::wstring::const_iterator;
     iterator begin, end;
-    Region(const std::wstring &text) : begin(text.cbegin()), end(text.cend()) {}
+    Region(const std::wstring& text) : begin(text.cbegin()), end(text.cend()) {}
     Region(iterator _begin, iterator _end) : begin(_begin), end(_end) {}
-    Region(const Region &orign) :begin(orign.begin),end(orign.end){}
+    Region(const Region& orign) : begin(orign.begin), end(orign.end) {}
     ~Region() = default;
     //演算子
-    Region operator=(const Region &orign) {
+    Region operator=(const Region& orign) {
         return Region(begin = orign.begin, end = orign.end);
     }
-    bool operator==(const Region &cmp) const {
+    bool operator==(const Region& cmp) const {
         return begin == cmp.begin && end == cmp.end;
     }
-    bool operator!=(const Region &cmp) const {
+    bool operator!=(const Region& cmp) const {
         return begin != cmp.begin || end != cmp.end;
     }
     bool operator!() const {
@@ -70,17 +71,20 @@ struct Region final {
         return begin < end;
     }
     //読み進んだ文を返す
-    Region Difference(const Region &changed) const {
-        return Region(begin, min(changed.begin , end));
+    Region Difference(const Region& changed) const {
+        return Region(begin, min(changed.begin, end));
     }
 };
 
 class ParserBase {
 public:
     ParserBase() = default;
-    ParserBase(const ParserBase &) = default;
+    ParserBase(const ParserBase&) = default;
     virtual ~ParserBase() = default;
-    virtual Region operator()(const Region &now) const = 0;
+    virtual std::optional<Region> Fetch(const Region& now) const = 0;//先読み用
+    virtual std::optional<Region> Load(const Region& now) const {//実際に読み込む
+        return Fetch(now);
+    }
 };
 
 using ParserPointer = std::shared_ptr<ParserBase>;
@@ -90,14 +94,18 @@ class CharactorItem : public ParserBase {
 
 public:
     CharactorItem(wchar_t _value) : value(_value) {}
-    CharactorItem(const CharactorItem &) = default;
+    CharactorItem(const CharactorItem&) = default;
     virtual ~CharactorItem() = default;
-    virtual Region operator() (const Region &reg) const {
-        return (reg.IsActive() && (*reg == value)) ? reg + 1 : reg;
-}
-};  // namespace BindJson::Parser
+    virtual std::optional<Region> Fetch(const Region& reg) const {
+        if ((reg.IsActive() && (*reg == value))) {
+            return reg + 1;
+        } else {
+            return std::nullopt;
+        }
+    }
+};
 
-inline ParserPointer Item(wchar_t c) {
+static inline ParserPointer Item(wchar_t c) {
     return ParserPointer(std::make_shared<CharactorItem>(c));
 }
 
@@ -105,17 +113,16 @@ class CharactorList : public ParserBase {
     const std::wstring list;
 
 public:
-    CharactorList(const std::wstring &_list) : list(_list) {}
-    CharactorList(const CharactorList &) = default;
+    CharactorList(const std::wstring& _list) : list(_list) {}
+    CharactorList(const CharactorList&) = default;
     virtual ~CharactorList() = default;
-    virtual Region operator()(const Region &reg) const;
+    virtual std::optional<Region> Fetch(const Region& reg) const;
 };
 
-inline ParserPointer List(const std::wstring &list) {
+static inline ParserPointer List(const std::wstring& list) {
     return ParserPointer(std::make_shared<CharactorList>(list));
 }
-
-inline ParserPointer Sign() {
+static inline ParserPointer Sign() {
     return ParserPointer(std::make_shared<CharactorList>(L"+-"));
 }
 
@@ -124,31 +131,30 @@ class CharactorRange : public ParserBase {
 
 public:
     CharactorRange(wchar_t _begin, wchar_t _end) : begin(_begin), end(_end) {}
-    CharactorRange(const CharactorRange &) = default;
+    CharactorRange(const CharactorRange&) = default;
     virtual ~CharactorRange() = default;
-    virtual Region operator()(const Region &reg) const {
-        return reg.IsActive() && (begin <= *reg) && (*reg <= end) ? reg + 1
-                                                                  : reg;
+    virtual std::optional<Region> Fetch(const Region& reg) const {
+        if (reg.IsActive() && (begin <= *reg) && (*reg <= end)) {
+            return reg + 1;
+        } else {
+            return std::nullopt;
+        }
     }
 };
 
-inline ParserPointer Range(wchar_t begin, wchar_t end) {
+static inline ParserPointer Range(wchar_t begin, wchar_t end) {
     return ParserPointer(std::make_shared<CharactorRange>(begin, end));
-}
-
-inline ParserPointer Digit() {
-    return ParserPointer(std::make_shared<CharactorRange>(L'0', L'9'));
 }
 
 class ParserFunction : public ParserBase {
     std::function<bool(wchar_t)> condition;
 
 public:
-    ParserFunction(const std::function<bool(wchar_t)> &_condition)
+    ParserFunction(const std::function<bool(wchar_t)>& _condition)
         : condition(_condition) {}
-    ParserFunction(const ParserFunction &) = default;
+    ParserFunction(const ParserFunction&) = default;
     virtual ~ParserFunction() = default;
-    virtual Region operator()(const Region &now) const {
+    virtual std::optional<Region> Fetch(const Region& now) const {
         return (now.IsActive() && condition(*now)) ? now + 1 : now;
     }
 };
@@ -157,9 +163,9 @@ class ParserSkip : public ParserBase {
     const unsigned int n;  // n回
 public:
     ParserSkip(unsigned int _n) : n(_n) {}
-    ParserSkip(const ParserSkip &) = default;
+    ParserSkip(const ParserSkip&) = default;
     virtual ~ParserSkip() = default;
-    virtual Region operator()(const Region &now) const {
+    virtual std::optional<Region> Fetch(const Region& now) const {
         if (auto next = now + n; next.IsActive()) {
             return next;
         } else {
@@ -173,11 +179,12 @@ class ParserOr : public ParserBase {
 
 public:
     ParserOr(ParserPointer _a, ParserPointer _b) : a(_a), b(_b) {}
-    ParserOr(const ParserOr &) = default;
+    ParserOr(const ParserOr&) = default;
     virtual ~ParserOr() = default;
-    virtual Region operator()(const Region &reg) const;
+    virtual std::optional<Region> Fetch(const Region& reg) const;
 };
-inline ParserPointer operator||(ParserPointer a, ParserPointer b) {
+
+static inline ParserPointer operator+(ParserPointer a, ParserPointer b) {
     return ParserPointer(std::make_shared<ParserOr>(a, b));
 }
 
@@ -186,42 +193,77 @@ class ParserAnd : public ParserBase {
 
 public:
     ParserAnd(ParserPointer _a, ParserPointer _b) : a(_a), b(_b) {}
-    ParserAnd(const ParserAnd &) = default;
+    ParserAnd(const ParserAnd&) = default;
     virtual ~ParserAnd() = default;
-    virtual Region operator()(const Region &reg) const;
+    virtual std::optional<Region> Fetch(const Region& reg) const;
 };
 
-inline ParserPointer operator&&(ParserPointer a, ParserPointer b) {
+static inline ParserPointer operator*(ParserPointer a, ParserPointer b) {
     return ParserPointer(std::make_shared<ParserAnd>(a, b));
 }
 
-class ParserAny : public ParserBase {
+class ParserOver : public ParserBase {
     const ParserPointer child;
     const unsigned int n;  // n回以上
 public:
-    ParserAny(ParserPointer _child, unsigned int _n) : child(_child), n(_n) {}
-    ParserAny(const ParserAny &) = default;
-    virtual ~ParserAny() = default;
-    virtual Region operator()(const Region &now) const;
+    ParserOver(ParserPointer _child, unsigned int _n) : child(_child), n(_n) {}
+    ParserOver(const ParserOver&) = default;
+    virtual ~ParserOver() = default;
+    virtual std::optional<Region> Fetch(const Region& now) const;
 };
 
-inline ParserPointer operator+(ParserPointer a, unsigned int n) {
-    return ParserPointer(std::make_shared<ParserAny>(a, n));
+static inline ParserPointer Over(ParserPointer a, unsigned int n) {
+    return ParserPointer(std::make_shared<ParserOver>(a, n));
 }
 
-class ParserSome : public ParserBase {
+static inline ParserPointer Some(ParserPointer a) {
+    return ParserPointer(std::make_shared<ParserOver>(a, 1));
+}
+
+class ParserLoop : public ParserBase {
     const ParserPointer child;
     const unsigned int n;  // n回
 public:
-    ParserSome(ParserPointer _child, unsigned int _n) : child(_child), n(_n) {}
-    ParserSome(const ParserSome &) = default;
-    virtual ~ParserSome() = default;
-    virtual Region operator()(const Region &now) const;
+    ParserLoop(ParserPointer _child, unsigned int _n) : child(_child), n(_n) {}
+    ParserLoop(const ParserLoop&) = default;
+    virtual ~ParserLoop() = default;
+    virtual std::optional<Region> Fetch(const Region& now) const;
 };
 
-inline ParserPointer operator*(ParserPointer a, unsigned int n) {
-    return ParserPointer(std::make_shared<ParserSome>(a, n));
+static inline ParserPointer operator^(ParserPointer a, unsigned int n) {
+    return ParserPointer(std::make_shared<ParserLoop>(a, n));
 }
+
+// 0,1回
+class ParserOption : public ParserBase {
+    const ParserPointer child;
+
+public:
+    ParserOption(ParserPointer _child) : child(_child) {}
+    ParserOption(const ParserOption&) = default;
+    virtual ~ParserOption() = default;
+    virtual std::optional<Region> Fetch(const Region& now) const;
+};
+
+static inline ParserPointer Option(ParserPointer p) {
+    return ParserPointer(std::make_shared<ParserOption>(p));
 }
+
+
+
+
+class ParserInteger : public ParserBase {
+    static ParserPointer parser;
+    int& bind;
+
+public:
+    ParserInteger(int& _bind);
+    ParserInteger(const ParserInteger&)=default;
+    virtual ~ParserInteger()=default;
+    virtual std::optional<Region> Fetch(const Region& now) const;
+    virtual std::optional<Region> Load(const Region& now) const;
+};
+
+}  // namespace BindJson::Parser
 
 #endif

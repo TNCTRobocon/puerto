@@ -1,5 +1,6 @@
 #include "parser.hpp"
 #include <algorithm>
+#include <optional>
 using namespace std;
 namespace BindJson ::Parser {
 
@@ -9,76 +10,90 @@ wstring Region::ToString() const {
     return result;
 }
 
-Region CharactorList::operator()(const Region &now) const {
+optional<Region> CharactorList::Fetch(const Region &now) const {
     if (wchar_t cmp = *now;
         now.IsActive() && any_of(list.begin(), list.end(),
                                  [cmp](wchar_t c) { return cmp == c; })) {
         return now + 1;
     } else {
-        return now;
+        return nullopt;
     }
 }
 
-Region ParserOr::operator()(const Region &now) const {
+optional<Region> ParserOr::Fetch(const Region &now) const {
     if (!now) {
-        return now;
-    } else if (auto next = (*a)(now); now != next) {
+        return nullopt;
+    } else if (auto next =a->Fetch(now); next.has_value()) {
         return next;
-    } else if (auto next = (*b)(now); now != next) {
+    } else if (auto next =b->Fetch(now); next.has_value()) {
         return next;
     } else {
-        return now;
+        return nullopt;
     }
 }
 
-Region ParserAnd::operator()(const Region &now) const {
-    if (!now) {
-        return now;
+optional<Region> ParserAnd::Fetch(const Region &last) const {
+    if (!last) {
+        return nullopt;
     }
-    if (auto next = (*a)(now); next != now) {
-        if (auto next2 = (*b)(next); next2 != next) {
-            return next2;
+    if (auto now = a->Fetch(last); now.has_value()) {
+        if (auto next = b->Fetch(now.value()); next.has_value()) {
+            return next;
         }
-    }
-    return now;
+    };
+    return nullopt;
 }
 
-Region ParserAny::operator()(const Region &last) const {
+optional<Region> ParserOver::Fetch(const Region &last) const {
     if (!last) {
         return last;
     }
-    auto now = last, next = last;
+    optional<Region> now=last,next=nullopt;
     // N回試行
     for (unsigned int count = 0; count < n; count++) {
-        next = (*child)(now);
-        if (now == next) {
-            return last;
+        next = child->Fetch(now.value());
+        if (!next.has_value() ) {
+            return nullopt;
         }
         now = next;
     }
     while (true) {
-        next = (*child)(now);
-        if (now == next) {
+        next = child->Fetch(now.value());
+        if ( !next.has_value()) {
             return now;
         }
         now = next;
     }
 }
 
-Region ParserSome::operator()(const Region &last) const {
+optional<Region> ParserLoop::Fetch(const Region &last) const {
     if (!last) {
-        return last;
+        return nullopt;
     }
-    auto now = last, next = last;
+    optional<Region> now = last, next = nullopt;
     // N回試行
     for (unsigned int count = 0; count < n; count++) {
-        next = (*child)(now);
-        if (now == next) {
-            return last;
+        next = child->Fetch(now.value());
+        if (!next.has_value()) {
+            return nullopt;
         }
         now = next;
     }
-    return now;
+    return now.value();
 }
+
+optional<Region> ParserOption::Fetch(const Region &now) const {
+    if (!now.IsActive())return nullopt;
+    if (auto next =child->Fetch(now);next.has_value()){
+        return next.value();
+    }else{
+        return now; 
+    }
+}
+
+ParserPointer ParserInteger::parser;
+
+
+
 
 }  // namespace BindJson::Parser
