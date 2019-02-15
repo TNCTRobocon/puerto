@@ -1,49 +1,44 @@
 #pragma once
 #ifndef __PORT_HEADER_GUARD__
 #define __PORT_HEADER_GUARD__
-#include <stdint.h>
-#include <functional>
+#include <boost/asio.hpp>
 #include <memory>
+#include <mutex>
 #include <string>
-#include <tuple>
-#include <vector>
+#include <deque>
 namespace Serial {
-class Port;
 
-using receiver = std::function<void(const std::string&)>;
+//仮想的に1対1の接続を行うクラス
 class Session final{
-    friend class Port;
-    std::vector<std::pair<receiver, std::string>> orders;
 public:
-    const unsigned int address;
-    Session (unsigned int _address):address(_address){}
-    Session* Add(receiver _receiver,const std::string& _message){
-        orders.emplace_back(std::pair(_receiver,_message));
-        return this;
-    }//method chain対応
+    const int address;
+private:
+    mutable std::mutex  lock;
+    std::deque<std::string> send;
+    std::deque<std::string> receive;
+   
+public:
+    Session(int _address) : address(_address) {}
+    Session(const Session&)=delete;
+    ~Session()=default;
+    bool Send(const std::string& line);//失敗したらfalse
+    bool Receive(std::string& line);//失敗したらfalse
+    bool IsConnected()const;//通信が終わっていたらtrue
+    bool Clear();//消すことができたらtrue
 };
 
-static inline std::unique_ptr<Session>CreateSession(unsigned int address){
-    return std::make_unique<Session>(address);
-}
+class Session;
+class SerialPort final {
+    boost::asio::io_service service;
+    boost::asio::serial_port port;
+    std::vector<std::shared_ptr<Session>> list;
 
-class Port final{
-    std::vector<std::unique_ptr<Session>> list_session;
-    int fd;
-    unsigned char *buffer;
-    const std::string path; 
 public:
-    Port(const std::string& _path,unsigned int bps=115200,size_t buffer_size=256);
-    Port(const Port&)=delete;
-    ~Port();
-    void Join(std::unique_ptr<Session> session){
-        list_session.emplace_back(std::move(session));
-    }
-    void Communicate();
-    bool IsEnable()const{
-        return fd>0;
-    }
+    SerialPort(const std::string& path, int baud = B115200);
+    SerialPort() = delete;
+    ~SerialPort() = default;
 };
+
 
 }  // namespace Serial
 #endif
