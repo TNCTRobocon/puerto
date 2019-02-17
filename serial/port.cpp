@@ -136,14 +136,6 @@ Session::~Session(){
     }
 }
 
-std::optional<std::string> Session::Transfer(const std::string& line){
-    if (active){
-        return port.Transfer(line);
-    }else{
-        return std::nullopt;
-    }
-}
-
 
 
 }  // namespace Serial
