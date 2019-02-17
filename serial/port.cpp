@@ -23,6 +23,31 @@ SerialPort::SerialPort(const std::string& _path, int baud)
         asio::serial_port_base::stop_bits::one));
 }
 
+std::unique_ptr<Session> SerialPort::CreateSession(unsigned int address) {
+    // address 範囲を確認する
+    if (0x02 >= address || address >= 0x80) {
+        return nullptr;
+    }
+    // 資源があるか
+    if (!is_opened) {
+        return nullptr;
+    }
+    // 生成
+    auto instance =std::make_unique<Session>(*this, address);
+    if (!instance->IsActive()){
+        return nullptr;
+    }
+    // 確保
+    is_opened=true;
+    return std::move(instance);
+
+}
+
+void SerialPort::ReleaseSession() {
+    // 資源を開放する
+    is_opened = false;
+}
+
 bool SerialPort::Connect(uint8_t address) {
     using namespace std;
     // address 形式に直す
@@ -66,9 +91,9 @@ std::optional<std::string> SerialPort::Transfer(const std::string& line) {
         });
     port.get_io_service().run();
     //整形
-    if (!is_connected){
+    if (!is_connected) {
         return std::nullopt;
-    }else{
+    } else {
         return asio::buffer_cast<const char*>(response.data());
     }
 }
@@ -98,5 +123,27 @@ bool SerialPort::WaitCommand(uint8_t c) {
     port.get_io_service().run();
     return is_connected;
 }
+
+Session::Session(SerialPort& _port, uint8_t _address)
+    : port(_port), address(_address) {
+    active = port.Connect(address);
+}
+
+Session::~Session(){
+    if (active){
+        port.Disconnect();
+        port.ReleaseSession();
+    }
+}
+
+std::optional<std::string> Session::Transfer(const std::string& line){
+    if (active){
+        return port.Transfer(line);
+    }else{
+        return std::nullopt;
+    }
+}
+
+
 
 }  // namespace Serial

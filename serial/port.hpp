@@ -30,17 +30,20 @@ public:
     }
 
     const std::string path;
+
 private:
     boost::asio::io_service io_service;
     boost::asio::serial_port port;
-    boost::array<uint8_t, receive_size> receive_buffer;
+    bool is_opened{false};//資源管理
 
 public:
     SerialPort(const std::string& _path, int baud = B115200);
     SerialPort() = delete;
     ~SerialPort() = default;
-
+    std::unique_ptr<Session> CreateSession(
+        unsigned int address);  //警告開けない場合はnull
 private:
+    void ReleaseSession();
     bool Connect(uint8_t address);  //成功なら真
     bool Disconnect();
     std::optional<std::string> Transfer(const std::string&);
@@ -48,7 +51,24 @@ private:
     bool WaitCommand(uint8_t c);  // cを受信するまで
 };
 
-class Session {};
+// SessionはSerialPortにつき一つまで実体化できる。
+class Session final {
+public:
+    const uint8_t address;
+
+private:
+    SerialPort& port;
+    mutable bool active;
+
+public:
+    Session(SerialPort&, uint8_t _address);
+    Session(const Session&) = delete;
+    ~Session();
+    bool IsActive() const {
+        return active;
+    }
+    std::optional<std::string> Transfer(const std::string&);
+};
 
 }  // namespace Serial
 #endif
