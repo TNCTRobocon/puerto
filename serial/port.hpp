@@ -1,52 +1,54 @@
 #pragma once
 #ifndef __PORT_HEADER_GUARD__
 #define __PORT_HEADER_GUARD__
+#include <stdint.h>
+#include <boost/array.hpp>
 #include <boost/asio.hpp>
-#include <deque>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
+#include <thread>
+#include <vector>
 namespace Serial {
 
-//仮想的に1対1の接続を行うクラス
-class SerialPort;
-class Session final {
-public:
-    friend class SerialPort;
-    const int address;
-
-private:
-    mutable std::mutex lock;
-    std::deque<std::string> send;
-    std::deque<std::string> receive;
-
-public:
-    Session(int _address) : address(_address) {}
-    Session(const Session&) = delete;
-    ~Session() = default;
-    bool Send(const std::string& line);  //失敗したらfalse
-    bool Receive(std::string& line);     //失敗したらfalse
-    bool IsConnected() const;            //通信が終わっていたらtrue
-    bool Clear();                        //消すことができたらtrue
-};
+class Session;
 
 class SerialPort final {
-public:
-    constexpr static char newline{'\r'};
-private:
-    boost::asio::io_service service;
-    boost::asio::serial_port port;
-    std::vector<std::shared_ptr<Session>> list;
-    std::mutex lock;
+    friend class Session;
 
 public:
-    SerialPort(const std::string& path, int baud = B115200);
+    // 定数
+    constexpr static size_t receive_size{256};
+    constexpr static char newline{'\r'};
+    constexpr static unsigned int timeout_ms = 10;  //[ms]
+    // 命令及び要求
+    constexpr static uint8_t request_disconnect = 0xFE;
+    constexpr static uint8_t command_disconnect = 0xFF;
+    constexpr static inline uint8_t command_select(uint8_t address) {
+        return address | 0x80;
+    }
+
+    const std::string path;
+private:
+    boost::asio::io_service io_service;
+    boost::asio::serial_port port;
+    boost::array<uint8_t, receive_size> receive_buffer;
+
+public:
+    SerialPort(const std::string& _path, int baud = B115200);
     SerialPort() = delete;
     ~SerialPort() = default;
-    bool Add(std::shared_ptr<Session> session);
-    bool Remove(std::shared_ptr<Session> target);
-    bool Process();
+
+private:
+    bool Connect(uint8_t address);  //成功なら真
+    bool Disconnect();
+    std::optional<std::string> Transfer(const std::string&);
+    void SendCommand(uint8_t c);  // cを送信する
+    bool WaitCommand(uint8_t c);  // cを受信するまで
 };
+
+class Session {};
 
 }  // namespace Serial
 #endif
