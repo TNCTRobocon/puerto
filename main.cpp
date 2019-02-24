@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     Application app(argc,argv);
     auto& setting = app.setting;
     Net::Server server(setting->network->port);
-
+    server();
     return 0;
 }
 

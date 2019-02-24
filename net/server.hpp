@@ -5,17 +5,19 @@
 #include <memory>
 #include <string>
 #include <zmq.hpp>
+#include <thread>
 namespace Net {
 
 class Server final{
     std::unique_ptr<zmq::context_t> context{nullptr};
     std::unique_ptr<zmq::socket_t> socket{nullptr};
+    std::string location;
 
 public:
     Server(unsigned int port);
     Server(const Server&)=delete;
     ~Server()=default;
-    void Run();
+    void operator ()();//no return
 };
 
 }  // namespace Net
