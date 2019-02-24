@@ -4,7 +4,6 @@ namespace Boot {
 using namespace std;
 using namespace json11;
 
-std::unique_ptr<Setting> settings;
 Setting::Setting(const string& _filename) : filename(_filename) {
     Read();
 }

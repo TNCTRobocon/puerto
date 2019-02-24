@@ -20,11 +20,11 @@ public:
 
 class NetWork;
 
-class Setting : public ISetting {
-    std::string filename;
+struct Setting : public ISetting {
+    //フィールド
+    const std::string filename;
     std::unique_ptr<NetWork> network;
-
-public:
+    //基本メソッド
     Setting(const std::string& _filename);
     Setting(const Setting&) = default;
     virtual ~Setting();
@@ -33,12 +33,6 @@ public:
     virtual json11::Json Serialize() const;
     virtual void Deserialize(const json11::Json&);
 };
-
-extern std::unique_ptr<Setting> settings;
-static inline std::unique_ptr<Setting> CreateSetting(
-    const std::string& filename) {
-    return std::make_unique<Setting>(filename);
-}
 
 struct NetWork : public ISetting {
     int port{40000};
