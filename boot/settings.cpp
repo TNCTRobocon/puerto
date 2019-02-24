@@ -14,39 +14,53 @@ Setting::~Setting() {
 }
 
 void Setting::Read() {
-    string text,error;
+    string text, error;
     // file access
     {
         ifstream reader(filename);
         if (!reader.is_open()) return;
         istreambuf_iterator<char> begin(reader), end;
-        text=string(begin,end);
+        text = string(begin, end);
     }
     // read as json
-    Json root=Json::parse(text,error);
+    Json root = Json::parse(text, error);
     Deserialize(root);
 }
 
 void Setting::Write() const {
     auto root = Serialize();
-    ofstream writer(filename);    
-    writer<<root.dump();
+    ofstream writer(filename);
+    writer << root.dump();
 }
 
-json11::Json Setting::Serialize() const{
-    Json root=Json::object{
-        {"test","a"}
-    };
+json11::Json Setting::Serialize() const {
+    Json root=Json::object{{"network",network->Serialize()}};
     return root;
 }
 
-void Setting::Deserialize(const Json& root){
-    auto it =root["test"];
-    if (it.is_string()){
-        cout<<it.string_value();
+void Setting::Deserialize(const Json& root) {
+   
+    if (auto it = root["network"]; it.is_object()) {
+        network = std::make_unique<NetWork>(it);
+    } else {
+        network = std::make_unique<NetWork>();
     }
 }
 
+NetWork::NetWork(const json11::Json& items) {
+    Deserialize(items);
+}
 
+json11::Json NetWork::Serialize() const {
+    return json11::Json::object{{"port", port}};
+}
+
+void NetWork::Deserialize(const json11::Json& items) {
+    if (auto it = items["network"]; it.is_number()) {
+        port = it.int_value();
+    } else {
+        port = 40000;
+    }
+}
 
 }  // namespace Boot

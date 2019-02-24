@@ -9,7 +9,7 @@ static bool setup(int argc, char** argv);
 int main(int argc, char** argv) {
     setup(argc, argv);
 
-    Net::Server server(5555);
+    //Net::Server server(5555);
 
     return 0;
 }
