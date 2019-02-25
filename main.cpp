@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
         cout << "run until pressing any key" << endl;
         cin >> dummy;
     }
+    server.Stop();
     return 0;
 }
 
@@ -26,5 +27,5 @@ Application::Application(int argc, char** argv) {
     std::string setting_path = "setting.json";
     flag.Add("config", setting_path, "設定ファイルの場所");
     flag.Parse(argc, argv);
-    setting = std::make_unique<Boot::Setting>(setting_path);
+    setting = Boot::Setting::Load(setting_path);
 }

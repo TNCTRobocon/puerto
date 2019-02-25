@@ -6,6 +6,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <util/json11.hpp>
 namespace Boot {
 
@@ -19,27 +20,36 @@ public:
 };
 
 class NetWork;
+class Motor;
+using MotorPointer = std::shared_ptr<Motor>;
 
 struct Setting : public ISetting {
     //フィールド
-    const std::string filename;
-    std::unique_ptr<NetWork> network{};
+    std::unique_ptr<NetWork> network{nullptr};
+    std::unordered_map<std::string, MotorPointer> motors;
     //基本メソッド
-    Setting(const std::string& _filename);
+    Setting(const json11::Json& items = json11::Json());
     Setting(const Setting&) = default;
-    virtual ~Setting();
-    void Read();
-    void Write() const;
+    virtual ~Setting() = default;
     virtual json11::Json Serialize() const;
     virtual void Deserialize(const json11::Json&);
+    static std::shared_ptr<Setting> Load(const std::string& path);
+    void Save(const std::string& path);
 };
 
 struct NetWork : public ISetting {
     int port{40000};
-    NetWork() = default;
-    NetWork(const json11::Json& items);
+    NetWork(const json11::Json& items = json11::Json());
     NetWork(const NetWork&) = default;
     virtual ~NetWork() = default;
+    virtual json11::Json Serialize() const;
+    virtual void Deserialize(const json11::Json&);
+};
+
+struct Motor : public ISetting {
+    Motor(const json11::Json& items = json11::Json());
+    Motor(const Motor&) = default;
+    virtual ~Motor() = default;
     virtual json11::Json Serialize() const;
     virtual void Deserialize(const json11::Json&);
 };

@@ -4,43 +4,16 @@ namespace Boot {
 using namespace std;
 using namespace json11;
 
-Setting::Setting(const string& _filename) : filename(_filename) {
-    Read();
-}
-
-Setting::~Setting() {
-    Write();
-}
-
-void Setting::Read() {
-    string text, error;
-    // file access
-    {
-        ifstream reader(filename);
-        if (!reader.is_open()) return;
-        istreambuf_iterator<char> begin(reader), end;
-        text = string(begin, end);
-    }
-    // read as json
-    Json root = Json::parse(text, error);
-    Deserialize(root);
-}
-
-void Setting::Write() const {
-    auto root = Serialize();
-    ofstream writer(filename);
-    writer << root.dump();
+Setting::Setting(const json11::Json& items) {
+    Deserialize(items);
 }
 
 json11::Json Setting::Serialize() const {
     std::map<string, Json> list;
     if (network) {
-        list["network"]=network->Serialize();
+        list["network"] = network->Serialize();
     }
-
-    Json root(list);
-
-    return root;
+    return Json{list};
 }
 
 void Setting::Deserialize(const Json& root) {
@@ -49,6 +22,39 @@ void Setting::Deserialize(const Json& root) {
     } else {
         network = std::make_unique<NetWork>();
     }
+    motors.clear();
+    if (auto parts = root["motors"]; parts.is_object()) {
+        const auto list = parts.object_items();
+        for (const auto [name, value] : list) {
+            if (!value.is_object()) continue;
+            motors.emplace(name, std::make_shared<Motor>(value));
+        }
+    }
+}
+
+std::shared_ptr<Setting> Setting::Load(const std::string& path) {
+    string text, error;
+    // file access
+    {
+        ifstream reader(path);
+        if (!reader.is_open()) return nullptr;
+        istreambuf_iterator<char> begin(reader), end;
+        text = string(begin, end);
+    }
+    // read as json
+    Json root = Json::parse(text, error);
+    if (!error.empty()) {
+        cerr << error << endl;
+        return nullptr;
+    } else {
+        return std::make_unique<Setting>(root);
+    }
+}
+
+void Setting::Save(const std::string& path) {
+    auto root = Serialize();
+    ofstream writer(path);
+    writer << root.dump();
 }
 
 NetWork::NetWork(const json11::Json& items) {
@@ -66,5 +72,18 @@ void NetWork::Deserialize(const json11::Json& items) {
         port = 40000;
     }
 }
+
+Motor::Motor(const json11::Json& items){
+    Deserialize(items);
+}
+
+json11::Json Motor::Serialize()const{
+    return json11::Json();
+}
+
+void Motor::Deserialize(const json11::Json& items){
+
+}
+
 
 }  // namespace Boot
