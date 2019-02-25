@@ -74,20 +74,5 @@ Json Server::Apply(const Json& request) {
 
     return Json{merge};
 }
-/*
-Json Server::ApplyMotors(const Json& motors) {
-    std::map<std::string, Json> merge;
-    //単一モーター
-    auto list = motors.object_items();
-    for (const auto& [key, value] : list) {
-        //命名規則"#[0-9]*"に従っているか?
-        if (key[0] != '#') {
-            continue;
-        }
-        //
-    }
 
-    return Json::object{};
-}
-*/
 }  // namespace Net
