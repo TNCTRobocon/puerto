@@ -9,6 +9,7 @@ struct Application final {
     std::unique_ptr<Boot::Setting> setting{nullptr};
 
     Application(int argc, char** argv);
+
 };
 
 #endif

@@ -6,12 +6,14 @@
 #include "net/server.hpp"
 using namespace std;
 int main(int argc, char** argv) {
-    Application app(argc,argv);
+    Application app(argc, argv);
     auto& setting = app.setting;
     Net::Server server(setting->network->port);
-    int a;
-    cin>>a;
-    
+    {
+        string dummy;
+        cout << "run until pressing any key" << endl;
+        cin >> dummy;
+    }
     return 0;
 }
 
