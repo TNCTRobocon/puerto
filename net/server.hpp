@@ -4,20 +4,23 @@
 
 #include <memory>
 #include <string>
-#include <zmq.hpp>
 #include <thread>
+#include <optional>
+#include <zmq.hpp>
+#include <atomic>
 namespace Net {
 
-class Server final{
-    std::unique_ptr<zmq::context_t> context{nullptr};
-    std::unique_ptr<zmq::socket_t> socket{nullptr};
+class Server final {
     std::string location;
-
+    std::unique_ptr<std::thread> runner;
+    std::atomic_bool killer{false};//runnerの動作を止める
 public:
     Server(unsigned int port);
-    Server(const Server&)=delete;
-    ~Server()=default;
-    void operator ()();//no return
+    Server(const Server&) = delete;
+    ~Server() ;
+
+private:
+    void Transfer(std::string location);
 };
 
 }  // namespace Net

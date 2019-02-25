@@ -4,12 +4,14 @@
 #include <zmq.hpp>
 #include "boot/flags.hpp"
 #include "net/server.hpp"
-
+using namespace std;
 int main(int argc, char** argv) {
     Application app(argc,argv);
     auto& setting = app.setting;
     Net::Server server(setting->network->port);
-    server();
+    int a;
+    cin>>a;
+    
     return 0;
 }
 
