@@ -33,12 +33,17 @@ void Setting::Write() const {
 }
 
 json11::Json Setting::Serialize() const {
-    Json root=Json::object{{"network",network->Serialize()}};
+    std::map<string, Json> list;
+    if (network) {
+        list["network"]=network->Serialize();
+    }
+
+    Json root(list);
+
     return root;
 }
 
 void Setting::Deserialize(const Json& root) {
-   
     if (auto it = root["network"]; it.is_object()) {
         network = std::make_unique<NetWork>(it);
     } else {
@@ -55,7 +60,7 @@ json11::Json NetWork::Serialize() const {
 }
 
 void NetWork::Deserialize(const json11::Json& items) {
-    if (auto it = items["network"]; it.is_number()) {
+    if (auto it = items["port"]; it.is_number()) {
         port = it.int_value();
     } else {
         port = 40000;

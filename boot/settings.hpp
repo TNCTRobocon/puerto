@@ -23,7 +23,7 @@ class NetWork;
 struct Setting : public ISetting {
     //フィールド
     const std::string filename;
-    std::unique_ptr<NetWork> network;
+    std::unique_ptr<NetWork> network{};
     //基本メソッド
     Setting(const std::string& _filename);
     Setting(const Setting&) = default;
