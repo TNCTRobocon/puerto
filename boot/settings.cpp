@@ -73,17 +73,20 @@ void NetWork::Deserialize(const json11::Json& items) {
     }
 }
 
-Motor::Motor(const json11::Json& items){
+Motor::Motor(const json11::Json& items) {
     Deserialize(items);
 }
 
-json11::Json Motor::Serialize()const{
+json11::Json Motor::Serialize() const {
     return json11::Json();
 }
 
-void Motor::Deserialize(const json11::Json& items){
-
+void Motor::Deserialize(const json11::Json& items) {
+    if (auto item = items["address"]; item.is_number()) {
+        address = item.int_value();
+    }else{
+        address = std::nullopt;
+    }
 }
-
 
 }  // namespace Boot
