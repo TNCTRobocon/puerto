@@ -47,18 +47,21 @@ void Server::Transfer(std::string location) {
         return;
     }
     while (!killer) {
+        using namespace std;
         zmq::message_t message;
-        std::string error;
+        std::string error="";
         socket.recv(&message);
-        const Json request = Json::parse(message.str(), error);
+        string recv((char*)message.data(),(char*)message.data()+message.size());
+        cout<<recv<<endl;
+        const Json request = Json::parse(recv, error);
         Json response;
-        if (!error.empty()) {
+        /*if (!error.empty()) {
             using namespace std;
             cerr << error << endl;
             response = Json::object{{"error", error}};
-        } else {
+        } else {*/
             response = Apply(request);
-        }
+        //}
         std::string text = response.dump();
         socket.send(text.data(), text.size());
     }

@@ -6,7 +6,8 @@
 namespace Net {
 
 class MotorAdapter : public IAdapter {
-    MotorAdapter()=default;
+public:
+    MotorAdapter() = default;
     MotorAdapter(const MotorAdapter&) = default;
     virtual ~MotorAdapter() = default;
     json11::Json Apply(const json11::Json&);
