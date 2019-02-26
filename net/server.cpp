@@ -17,13 +17,13 @@ Server::~Server() {
 
 void Server::Start() {
     if (!runner) {
-        runner =
-            std::make_unique<std::thread>(&Server::Transfer, this, location);
+        runner = std::make_unique<std::thread>(&Server::Transfer, this, location);
     }
 }
 
 void Server::Stop() {
     if (runner) {
+        context.close();
         killer = true;
         runner->join();
         runner.reset();
@@ -32,13 +32,11 @@ void Server::Stop() {
 
 void Server::Add(const std::string& name, IAdapterPointer adapter) {
     if (!runner) {
-        adapters.push_back(
-            std::pair<std::string, IAdapterPointer>{name, adapter});
+        adapters.push_back(std::pair<std::string, IAdapterPointer>{name, adapter});
     }
 }
 void Server::Transfer(std::string location) {
-    zmq::context_t context;
-    zmq::socket_t socket(context, zmq::socket_type::rep);
+    zmq::socket_t socket{context, zmq::socket_type::rep};
     try {
         socket.bind(location);
     } catch (zmq::error_t error) {
@@ -49,29 +47,34 @@ void Server::Transfer(std::string location) {
     while (!killer) {
         using namespace std;
         zmq::message_t message;
-        std::string error="";
-        socket.recv(&message);
-        string recv((char*)message.data(),(char*)message.data()+message.size());
-        cout<<recv<<endl;
-        const Json request = Json::parse(recv, error);
-        Json response;
-        /*if (!error.empty()) {
-            using namespace std;
-            cerr << error << endl;
-            response = Json::object{{"error", error}};
-        } else {*/
+        std::string error = "";
+        try {
+            socket.recv(&message);
+            string recv((char*)message.data(), (char*)message.data() + message.size());
+            cout << recv << endl;
+            const Json request = Json::parse(recv, error);
+            Json response;
+            /*if (!error.empty()) {
+                using namespace std;
+                cerr << error << endl;
+                response = Json::object{{"error", error}};
+            } else {*/
             response = Apply(request);
-        //}
-        std::string text = response.dump();
-        socket.send(text.data(), text.size());
+            //}
+            std::string text = response.dump();
+            socket.send(text.data(), text.size());
+        } catch (zmq::error_t error) {
+            cerr << error.what() << endl;
+            return;
+        }
     }
 }
 
 Json Server::Apply(const Json& request) {
     std::map<std::string, Json> merge;
     for (auto [name, adapter] : adapters) {
-        if (auto it =request[name];it.is_object()){
-            merge[name]=adapter->Apply(it);
+        if (auto it = request[name]; it.is_object()) {
+            merge[name] = adapter->Apply(it);
         }
     }
 

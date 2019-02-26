@@ -3,9 +3,9 @@
 #include <thread>
 #include <zmq.hpp>
 #include "boot/flags.hpp"
+#include "boot/json11_helper.hpp"
 #include "net/motors.hpp"
 #include "net/server.hpp"
-#include "boot/json11_helper.hpp"
 using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
@@ -19,13 +19,13 @@ int main(int argc, char** argv) {
         cout << "run until pressing any key" << endl;
         cin >> dummy;
     }
+    cout<<"a"<<endl;
     server.Stop();
     return 0;
 }
 
 Application::Application(int argc, char** argv) {
     Boot::Flags flag;
-    std::string setting_path = "setting.json";
     flag.Add("config", setting_path, "設定ファイルの場所");
     flag.Parse(argc, argv);
     auto it = Boot::load(setting_path);
@@ -34,4 +34,8 @@ Application::Application(int argc, char** argv) {
         exit(0);
     }
     setting = std::make_shared<Boot::Setting>(it.GetRight());
+}
+
+Application::~Application() {
+    Boot::save(Boot::to_json(*setting), setting_path);
 }

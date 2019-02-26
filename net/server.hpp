@@ -27,8 +27,10 @@ using IAdapterPointer = std::shared_ptr<IAdapter>;
 class Server final {
     std::string location;
     std::unique_ptr<std::thread> runner;
-    std::atomic_bool killer{false};  // runnerの動作を止める
-    std::vector<std::pair<std::string, IAdapterPointer>> adapters;//動作中には追加されません
+    std::atomic_bool killer{false};                                 // runnerの動作を止める
+    std::vector<std::pair<std::string, IAdapterPointer>> adapters;  //動作中には追加されません
+    zmq::context_t context;
+
 
 public:
     Server(unsigned int port);
