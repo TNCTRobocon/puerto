@@ -5,7 +5,7 @@
 #include "boot/flags.hpp"
 #include "net/motors.hpp"
 #include "net/server.hpp"
-#include "util/json11_helper.hpp"
+#include "boot/json11_helper.hpp"
 using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
@@ -28,7 +28,7 @@ Application::Application(int argc, char** argv) {
     std::string setting_path = "setting.json";
     flag.Add("config", setting_path, "設定ファイルの場所");
     flag.Parse(argc, argv);
-    auto it = json11::load(setting_path);
+    auto it = Boot::load(setting_path);
     if (!it) {
         std::cerr << it.GetLeft() << std::endl;
         exit(0);

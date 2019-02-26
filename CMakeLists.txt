@@ -17,9 +17,9 @@ add_executable(puerto
 )
 include_directories(.)
 add_subdirectory(boot)
-add_subdirectory(util)
+add_subdirectory(utils)
 add_subdirectory(net)
-target_link_libraries(puerto boot util net)
+target_link_libraries(puerto boot utils net)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

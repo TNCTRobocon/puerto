@@ -1,13 +1,13 @@
 #pragma once
-#ifndef __SETTING_HEADER_GUARD__
-#define __SETTING_HEADER_GUARD__
+#ifndef __BOOT_SETTING_HEADER_GUARD__
+#define __BOOT_SETTING_HEADER_GUARD__
 
 #include <fstream>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include <util/json11.hpp>
+#include <utils/json11.hpp>
 namespace Boot {
 
 struct NetWork {
@@ -15,6 +15,7 @@ struct NetWork {
     NetWork(const json11::Json& items);
     json11::Json ToJson() const;
 };
+json11::Json to_json(const NetWork&);
 
 struct Motor {
     std::string type;
@@ -22,21 +23,18 @@ struct Motor {
     Motor(const json11::Json& items = json11::Json());
     json11::Json ToJson()const;
 };
-
-
-using MotorPointer = std::shared_ptr<Motor>;
+json11::Json to_json(const Motor&);
 
 struct Setting {
     //フィールド
     NetWork network;
-    std::map<std::string, MotorPointer> motors;
+    std::map<std::string, Motor> motors;
     //基本メソッド
     Setting(const json11::Json& items);
     Setting(const Setting&) = default;
     ~Setting() = default;
-    json11::Json ToJson() const;
 };
-
+ json11::Json to_json(const Setting&) ;
 
 
 }  // namespace Boot

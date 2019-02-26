@@ -1,36 +1,33 @@
 #include "settings.hpp"
+
 #include <iostream>
-#include "util/json11_helper.hpp"
+#include "json11_helper.hpp"
 namespace Boot {
 using namespace std;
 using namespace json11;
 
 NetWork::NetWork(const json11::Json& items) : port(get_int(items, "port").value_or(40000)) {}
-
-Json NetWork::ToJson() const {
-    return json11::Json::object{{"port", port}};
+Json to_json(const NetWork& net) {
+    return Json::object{{"port", net.port}};
 }
 
 Motor::Motor(const json11::Json& items)
-    : type(json11::get_string(items, "type").value_or("none")), address(json11::get_int(items, "address")) {}
+    : type(get_string(items, "type").value_or("none")), address(get_int(items, "address")) {}
 
-Json Motor::ToJson() const {
-    return json11::Json::object{{"type", type},{"address",to_json(address)}};
+json11::Json to_json(const Motor& motor) {
+    return json11::Json::object{{"type", motor.type}, {"address",to_json(motor.address)}};
 }
 
 Setting::Setting(const json11::Json& items) : network(get_object(items, "network").value_or(get_dummy())) {
-    if (auto parts = items["motors"]; parts.is_object()) {
-        const auto list = parts.object_items();
-        for (const auto [name, value] : list) {
-            if (!value.is_object()) continue;
-            motors.emplace(name, std::make_shared<Motor>(value));
+    if (auto it = items["motors"]; it.is_object()) {
+        const auto& objects = it.object_items();
+        for (const auto& [name, object] : objects) {
+            motors.insert_or_assign(name, Motor(object));
         }
     }
 }
-
-Json Setting::ToJson() const {
-    return Json::object{{"network", network.ToJson()}};
+json11::Json to_json(const Setting& set) {
+    return Json::object{{"network", to_json(set.network)}};
 }
-
 
 }  // namespace Boot
