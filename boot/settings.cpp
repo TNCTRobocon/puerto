@@ -24,6 +24,12 @@ Setting::Setting(const json11::Json& items) : network(get_object(items, "network
         for (const auto& [name, object] : objects) {
             motors.insert_or_assign(name, Motor(object));
         }
+    }else{
+        //dummyを作成
+        Motor mtr;
+        mtr.address=0;
+        mtr.type="demo";
+        motors["demo"]=mtr;
     }
 }
 json11::Json to_json(const Setting& set) {

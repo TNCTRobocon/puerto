@@ -18,9 +18,10 @@ struct NetWork {
 json11::Json to_json(const NetWork&);
 
 struct Motor {
-    std::string type;
+    std::string type{"none"};
     std::optional<int> address;
-    Motor(const json11::Json& items = json11::Json());
+    Motor()=default;
+    Motor(const json11::Json& items);
     json11::Json ToJson()const;
 };
 json11::Json to_json(const Motor&);
