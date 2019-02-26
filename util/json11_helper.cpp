@@ -4,6 +4,11 @@
 #include <sstream>
 namespace json11 {
 
+const Json::object& get_dummy() {
+    static const Json::object result;
+    return result;
+}
+
 std::optional<Json::object> get_object(const json11::Json& items, const std::string& name) {
     if (auto it = items[name]; it.is_object()) {
         return it.object_items();
@@ -44,7 +49,7 @@ std::optional<bool> get_bool(const json11::Json& items, const std::string& name)
     }
 }
 
-util::Either<json11::Json, std::string> Load(const std::string& path) {
+util::Either<json11::Json, std::string> load(const std::string& path) {
     using namespace std;
     string text, error;
     // file access
@@ -67,7 +72,7 @@ util::Either<json11::Json, std::string> Load(const std::string& path) {
     }
 }
 
-void Save(const json11::Json& items, const std::string& path) {
+void save(const json11::Json& items, const std::string& path) {
     using namespace std;
     string dump = items.dump();
     ofstream writer(path);
