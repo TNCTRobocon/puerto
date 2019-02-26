@@ -1,5 +1,6 @@
 #include "settings.hpp"
 #include <iostream>
+#include "util/json11_helper.hpp"
 namespace Boot {
 using namespace std;
 using namespace json11;
@@ -82,11 +83,8 @@ json11::Json Motor::Serialize() const {
 }
 
 void Motor::Deserialize(const json11::Json& items) {
-    if (auto item = items["address"]; item.is_number()) {
-        address = item.int_value();
-    }else{
-        address = std::nullopt;
-    }
+    type = json11::get_string(items, "type");
+    address =json11::get_int(items,"address");
 }
 
 }  // namespace Boot

@@ -47,7 +47,7 @@ struct NetWork : public ISetting {
 };
 
 struct Motor : public ISetting {
-    bool report;
+    std::optional<std::string> type;
     std::optional<int> address;
     Motor(const json11::Json& items = json11::Json());
     Motor(const Motor&) = default;
