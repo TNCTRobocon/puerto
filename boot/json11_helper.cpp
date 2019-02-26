@@ -57,7 +57,7 @@ util::Either<json11::Json, std::string> load(const std::string& path) {
         ifstream reader(path);
         if (!reader.is_open()) {
             stringstream ss;
-            ss << "[Error]" << path << "can not open!!" << endl;
+            ss << "[Error] " << path << " can not open!!" << endl;
             return ss.str();
         };
         istreambuf_iterator<char> begin(reader), end;

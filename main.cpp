@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
         cout << "run until pressing any key" << endl;
         cin >> dummy;
     }
-    cout<<"a"<<endl;
+    cout << "a" << endl;
     server.Stop();
     return 0;
 }
@@ -31,7 +31,8 @@ Application::Application(int argc, char** argv) {
     auto it = Boot::load(setting_path);
     if (!it) {
         std::cerr << it.GetLeft() << std::endl;
-        exit(0);
+        std::cerr << "[Info] load default setting"<<std::endl;
+        it.Reset(Boot::get_dummy());
     }
     setting = std::make_shared<Boot::Setting>(it.GetRight());
 }

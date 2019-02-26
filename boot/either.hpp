@@ -68,13 +68,13 @@ public:
     }
 
     void Reset(const R& _right) {
-        right.reset(_right);
+        right = _right;
         left.reset();
     }
 
     void Reset(const L& _left) {
         right.reset();
-        left.reset(_left);
+        left=_left;
     }
 };
 }  // namespace util
