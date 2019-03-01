@@ -16,24 +16,23 @@ namespace Net {
 
 // メインスレッドから操作するときに使うクラス
 class InternalServer {
-    zmq::context_t context;
-    std::string endpoint;  //プロセス通信用
+    std::string endpoint;  //プロセス通信用エンドポイント
 
 public:
     InternalServer(const std::string& _endpoint) : endpoint(_endpoint) {}
     InternalServer(const InternalServer&) = delete;
-    virtual ~InternalServer()=default;
+    virtual ~InternalServer() = default;
+    std::optional<std::string> Communicate(const std::string&);
 };
 
 // 外部と通信するクラス(別スレッドで動作する)
 class ExternalServer {
-    zmq::context_t context;
-    std::string endpoint;  //プロセス通信用
-    int port;              //外部に開放するポート
+    std::string endpoint_global;  //外部通信用エンドポイント
+    std::string endpoint_local;   //プロセス通信用エンドポイント
     std::thread thread;
 
 public:
-    ExternalServer(const std::string& _endpoint, int _port);
+    ExternalServer(const std::string& _endpoint_global, const std::string _endpoint_local);
     ExternalServer(const ExternalServer&) = delete;
     virtual ~ExternalServer();
     void Communicate();
@@ -45,7 +44,7 @@ class Server {
     std::optional<ExternalServer> external{std::nullopt};
 
 public:
-    Server(const std::string& name, int port);
+    Server(const std::string& path,const std::string& host, int port);
 };
 
 }  // namespace Net

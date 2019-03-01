@@ -10,7 +10,7 @@ using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
     auto& setting = app.setting;
-    Net::Server server(app.path, setting->network.port);
+    Net::Server server(app.path, "localhost", setting->network.port);
     /*server.Add("motors", make_unique<Net::MotorAdapter>());
     server.Start();*/
     /*
@@ -36,7 +36,6 @@ Application::Application(int argc, char** argv) {
         it.Reset(Boot::get_dummy());
     }
     setting = std::make_shared<Boot::Setting>(it.GetRight());
-
 }
 
 Application::~Application() {
