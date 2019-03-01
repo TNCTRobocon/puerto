@@ -8,6 +8,7 @@
 struct Application final {
     std::shared_ptr<Boot::Setting> setting{nullptr};
     std::string setting_path{ "setting.json"};
+    std::string path;
     Application(int argc, char** argv);
     ~Application();
 };

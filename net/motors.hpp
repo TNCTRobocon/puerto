@@ -5,7 +5,7 @@
 #include "server.hpp"
 namespace Net {
 
-class MotorAdapter : public IAdapter {
+class MotorAdapter {
 public:
     MotorAdapter() = default;
     MotorAdapter(const MotorAdapter&) = default;

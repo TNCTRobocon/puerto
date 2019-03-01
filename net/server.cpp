@@ -6,79 +6,23 @@
 #include <map>
 namespace Net {
 using namespace json11;
+using namespace std;
 
-Server::Server(unsigned int port) {
-    location = (boost::format("tcp://*:%1%") % port).str();
+ExternalServer::ExternalServer(const std::string& _endpoint, int _port)
+    : endpoint(_endpoint), port(_port), thread(&ExternalServer::Communicate, this) {}
+
+ExternalServer::~ExternalServer() {
+    thread.join();
 }
 
-Server::~Server() {
-    Stop();
+void ExternalServer::Communicate() {
+    cout << endpoint << endl;
 }
 
-void Server::Start() {
-    if (!runner) {
-        runner = std::make_unique<std::thread>(&Server::Transfer, this, location);
-    }
-}
-
-void Server::Stop() {
-    if (runner) {
-        context.close();
-        killer = true;
-        runner->join();
-        runner.reset();
-    }
-}
-
-void Server::Add(const std::string& name, IAdapterPointer adapter) {
-    if (!runner) {
-        adapters.push_back(std::pair<std::string, IAdapterPointer>{name, adapter});
-    }
-}
-void Server::Transfer(std::string location) {
-    zmq::socket_t socket{context, zmq::socket_type::rep};
-    try {
-        socket.bind(location);
-    } catch (zmq::error_t error) {
-        using namespace std;
-        cerr << error.what() << endl;
-        return;
-    }
-    while (!killer) {
-        using namespace std;
-        zmq::message_t message;
-        std::string error = "";
-        try {
-            socket.recv(&message);
-            string recv((char*)message.data(), (char*)message.data() + message.size());
-            cout << recv << endl;
-            const Json request = Json::parse(recv, error);
-            Json response;
-            /*if (!error.empty()) {
-                using namespace std;
-                cerr << error << endl;
-                response = Json::object{{"error", error}};
-            } else {*/
-            response = Apply(request);
-            //}
-            std::string text = response.dump();
-            socket.send(text.data(), text.size());
-        } catch (zmq::error_t error) {
-            cerr << error.what() << endl;
-            return;
-        }
-    }
-}
-
-Json Server::Apply(const Json& request) {
-    std::map<std::string, Json> merge;
-    for (auto [name, adapter] : adapters) {
-        if (auto it = request[name]; it.is_object()) {
-            merge[name] = adapter->Apply(it);
-        }
-    }
-
-    return Json{merge};
+Server::Server(const std::string& name, int port) {
+    std::string endpoint = (boost::format("ipc:///tmp/%1%") % name).str();
+    internal.emplace(endpoint);
+    external.emplace(endpoint, port);
 }
 
 }  // namespace Net

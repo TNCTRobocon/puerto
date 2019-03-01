@@ -41,10 +41,14 @@ void Flags::Parse(int argc, char** argv) {
             }
         }
     }
+    // argv[0]について展開する
+    const char* begin;
+    for (const char* it = begin = argv[0]; *it != '\0'; it++) {
+        if (*it == '/') {
+            begin = it + 1;
+        }
+    }
+    path= string(begin);
 }
-
-
-
-
 
 }  // namespace Boot

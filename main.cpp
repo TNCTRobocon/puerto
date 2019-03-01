@@ -10,17 +10,17 @@ using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
     auto& setting = app.setting;
-    Net::Server server(setting->network.port);
-    server.Add("motors", make_unique<Net::MotorAdapter>());
-    server.Start();
-
-    {
-        string dummy;
-        cout << "run until pressing any key" << endl;
-        cin >> dummy;
-    }
-    cout << "a" << endl;
-    server.Stop();
+    Net::Server server(app.path, setting->network.port);
+    /*server.Add("motors", make_unique<Net::MotorAdapter>());
+    server.Start();*/
+    /*
+        {
+            string dummy;
+            cout << "run until pressing any key" << endl;
+            cin >> dummy;
+        }
+        cout << "a" << endl;*/
+    /*server.Stop();*/
     return 0;
 }
 
@@ -28,13 +28,15 @@ Application::Application(int argc, char** argv) {
     Boot::Flags flag;
     flag.Add("config", setting_path, "設定ファイルの場所");
     flag.Parse(argc, argv);
+    path = flag.GetPath();
     auto it = Boot::load(setting_path);
     if (!it) {
         std::cerr << it.GetLeft() << std::endl;
-        std::cerr << "[Info] load default setting"<<std::endl;
+        std::cerr << "[Info] load default setting" << std::endl;
         it.Reset(Boot::get_dummy());
     }
     setting = std::make_shared<Boot::Setting>(it.GetRight());
+
 }
 
 Application::~Application() {

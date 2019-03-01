@@ -14,35 +14,38 @@
 
 namespace Net {
 
-class IAdapter {
+// メインスレッドから操作するときに使うクラス
+class InternalServer {
+    zmq::context_t context;
+    std::string endpoint;  //プロセス通信用
+
 public:
-    IAdapter() = default;
-    IAdapter(const IAdapter&) = default;
-    virtual ~IAdapter() = default;
-    virtual json11::Json Apply(const json11::Json&) = 0;
+    InternalServer(const std::string& _endpoint) : endpoint(_endpoint) {}
+    InternalServer(const InternalServer&) = delete;
+    virtual ~InternalServer()=default;
 };
 
-using IAdapterPointer = std::shared_ptr<IAdapter>;
-
-class Server final {
-    std::string location;
-    std::unique_ptr<std::thread> runner;
-    std::atomic_bool killer{false};                                 // runnerの動作を止める
-    std::vector<std::pair<std::string, IAdapterPointer>> adapters;  //動作中には追加されません
+// 外部と通信するクラス(別スレッドで動作する)
+class ExternalServer {
     zmq::context_t context;
-
+    std::string endpoint;  //プロセス通信用
+    int port;              //外部に開放するポート
+    std::thread thread;
 
 public:
-    Server(unsigned int port);
-    Server(const Server&) = delete;
-    ~Server();
-    void Start();
-    void Stop();
-    void Add(const std::string& name, IAdapterPointer adpater);
+    ExternalServer(const std::string& _endpoint, int _port);
+    ExternalServer(const ExternalServer&) = delete;
+    virtual ~ExternalServer();
+    void Communicate();
+};
 
-private:
-    void Transfer(std::string location);
-    json11::Json Apply(const json11::Json&);
+class Server {
+    int port;
+    std::optional<InternalServer> internal{std::nullopt};
+    std::optional<ExternalServer> external{std::nullopt};
+
+public:
+    Server(const std::string& name, int port);
 };
 
 }  // namespace Net

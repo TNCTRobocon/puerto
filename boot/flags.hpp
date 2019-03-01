@@ -53,6 +53,7 @@ public:
 
 class Flags {
     std::unordered_map<std::string, FlagBase*> flags;
+    std::string path;
 
 public:
     Flags() = default;
@@ -70,6 +71,9 @@ public:
     }
     // Parse
     void Parse(int argc, char** argv);
+    const std::string& GetPath() const {
+        return path;
+    }
 };
 
 }  // namespace Boot
