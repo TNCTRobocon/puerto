@@ -1,9 +1,7 @@
 #include "server.hpp"
-#include <algorithm>
 #include <boost/format.hpp>
-#include <exception>
 #include <iostream>
-#include <map>
+
 namespace Net {
 
 Server::Server(const std::string& host, int port)

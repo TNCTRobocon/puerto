@@ -2,14 +2,9 @@
 #ifndef __SERVER_HEADER_GUARD__
 #define __SERVER_HEADER_GUARD__
 
-#include <atomic>
 #include <memory>
-#include <optional>
 #include <string>
 #include <thread>
-#include <tuple>
-#include <utils/json11.hpp>
-#include <vector>
 #include <zmq.hpp>
 
 namespace Net {
@@ -23,10 +18,9 @@ public:
     Server(const std::string& host = "*", int port = 40000);
     Server(const Server&) = delete;
     ~Server();
-    
 
 private:
-    void Transfer();//制約 thread以外から呼び出してはならない
+    void Transfer();  //制約 thread以外から呼び出してはならない
 };
 
 }  // namespace Net
