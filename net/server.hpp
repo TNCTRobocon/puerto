@@ -23,6 +23,7 @@ public:
     Server(const std::string& host = "*", int port = 40000);
     Server(const Server&) = delete;
     ~Server();
+    
 
 private:
     void Transfer();//制約 thread以外から呼び出してはならない

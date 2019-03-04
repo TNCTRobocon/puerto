@@ -18,8 +18,6 @@ Server::~Server() {
     nearSocket.send(request.data(), request.size());
     zmq::message_t message;
     nearSocket.recv(&message);
-    std::string response((char*)message.data(), message.size());
-    std::cout << response << std::endl;
     thread.join();
 }
 
@@ -32,13 +30,11 @@ void Server::Transfer() {
 
     zmq::pollitem_t items[2]{{nearSocket, 0, ZMQ_POLLIN, 0}, {farSocket, 0, ZMQ_POLLIN, 0}};
     while (1) {
-        int n = zmq::poll(items, 2, -1);
-        std::cout << "test" << n << std::endl;
+        zmq::poll(items, 2, -1);
         if (items[0].revents & ZMQ_POLLIN) {
             zmq::message_t message;
             nearSocket.recv(&message);
             std::string request((char*)message.data(), message.size());
-            std::cout << request << std::endl;
             nearSocket.send(request.data(), request.size());
             if (request == "quit") return;
         }
@@ -46,7 +42,6 @@ void Server::Transfer() {
             zmq::message_t message;
             farSocket.recv(&message);
             std::string request((char*)message.data(), message.size());
-            std::cout << request << std::endl;
             farSocket.send(request.data(), request.size());
         }
     }
