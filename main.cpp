@@ -10,16 +10,13 @@ using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
     auto& setting = app.setting;
-    Net::Server server(app.path, "localhost", setting->network.port);
-    /*server.Add("motors", make_unique<Net::MotorAdapter>());
-    server.Start();*/
-    /*
-        {
-            string dummy;
-            cout << "run until pressing any key" << endl;
-            cin >> dummy;
-        }
-        cout << "a" << endl;*/
+    Net::Server server("*",setting->network.port);
+    {
+        string dummy;
+        std::cout << "run until pressing any key" << std::endl;
+        cin >> dummy;
+    }
+    std::cout << "a" << endl;
     /*server.Stop();*/
     return 0;
 }

@@ -1,5 +1,5 @@
 #pragma once
-#ifndef __NET_MOTORS_HEADER_GURAD__
+#ifndef __NET_MOTORS_HEADER_GUARD__
 #define __NET_MOTORS_HEADER_GUARD__
 #include <utils/json11.hpp>
 #include "server.hpp"
