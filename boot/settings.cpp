@@ -1,10 +1,11 @@
 #include "settings.hpp"
 
 #include <iostream>
-#include "json11_helper.hpp"
+#include <utils/json11_helper.hpp>
 namespace Boot {
 using namespace std;
 using namespace json11;
+using namespace Utils;
 
 NetWork::NetWork(const json11::Json& items) : port(get_int(items, "port").value_or(40000)) {}
 Json to_json(const NetWork& net) {
@@ -15,7 +16,7 @@ Motor::Motor(const json11::Json& items)
     : type(get_string(items, "type").value_or("none")), address(get_int(items, "address")) {}
 
 json11::Json to_json(const Motor& motor) {
-    return json11::Json::object{{"type", motor.type}, {"address",to_json(motor.address)}};
+    return json11::Json::object{{"type", motor.type}, {"address",Utils::to_json(motor.address)}};
 }
 
 Setting::Setting(const json11::Json& items) : network(get_object(items, "network").value_or(get_dummy())) {

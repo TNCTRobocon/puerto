@@ -4,8 +4,9 @@
 
 namespace Net {
 
-Server::Server(const std::string& host, int port)
-    : nearLocation((boost::format("inproc://%1%") % port).str()),
+Server::Server(const ServerHandler& _handler, const std::string& host, int port)
+    : handler(_handler),
+      nearLocation((boost::format("inproc://%1%") % port).str()),
       farLocation((boost::format("tcp://%1%:%2%") % host % port).str()),
       thread(&Server::Transfer, this) {}
 
@@ -40,7 +41,8 @@ void Server::Transfer() {
             zmq::message_t message;
             farSocket.recv(&message);
             std::string request((char*)message.data(), message.size());
-            farSocket.send(request.data(), request.size());
+            std::string response=handler(request);
+            farSocket.send(response.data(), response.size());
         }
     }
 }

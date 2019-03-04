@@ -3,14 +3,14 @@
 #include <thread>
 #include <zmq.hpp>
 #include "boot/flags.hpp"
-#include "boot/json11_helper.hpp"
 #include "net/motors.hpp"
 #include "net/server.hpp"
+#include "utils/json11_helper.hpp"
 using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
     auto& setting = app.setting;
-    Net::Server server("*",setting->network.port);
+    //Net::Server server("*",setting->network.port);
     {
         string dummy;
         std::cout << "run until pressing any key" << std::endl;
@@ -26,15 +26,15 @@ Application::Application(int argc, char** argv) {
     flag.Add("config", setting_path, "設定ファイルの場所");
     flag.Parse(argc, argv);
     path = flag.GetPath();
-    auto it = Boot::load(setting_path);
+    auto it = Utils::load(setting_path);
     if (!it) {
         std::cerr << it.GetLeft() << std::endl;
         std::cerr << "[Info] load default setting" << std::endl;
-        it.Reset(Boot::get_dummy());
+        it.Reset(Utils::get_dummy());
     }
     setting = std::make_shared<Boot::Setting>(it.GetRight());
 }
 
 Application::~Application() {
-    Boot::save(Boot::to_json(*setting), setting_path);
+    Utils::save(Boot::to_json(*setting), setting_path);
 }

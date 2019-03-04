@@ -6,7 +6,7 @@
 #include <tuple>
 #include "either.hpp"
 #include <utils/json11.hpp>
-namespace Boot{
+namespace Utils{
 
 // optinalでラップする関数郡
 const json11::Json::object& get_dummy();
