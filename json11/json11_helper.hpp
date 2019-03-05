@@ -1,14 +1,20 @@
 #pragma once
 #ifndef __UTIL_JSON11_HELPER_HEADER_GURAD__
 #define __UTIL_JSON11_HELPER_HEADER_GURAD__
+#include <functional>
 #include <optional>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include "either.hpp"
 #include "json11.hpp"
-#include <type_traits>
-#include <functional>
+#include <memory>
 namespace json11 {
+
+class IToJson {
+public:
+    virtual json11::Json toJson() const = 0;
+};
 
 // optinalでラップする関数郡
 const json11::Json::object& get_dummy();
@@ -41,5 +47,5 @@ json11::Json to_json(const std::map<std::string, T> list) {
 util::Either<json11::Json, std::string> load(const std::string& path);
 void save(const json11::Json& items, const std::string& path);
 
-}  // namespace Utils
+}  // namespace json11
 #endif
