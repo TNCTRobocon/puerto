@@ -3,28 +3,26 @@
 #define __BOOT_SETTING_HEADER_GUARD__
 
 #include <fstream>
+#include <json11/json11.hpp>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include <json11/json11.hpp>
 namespace Boot {
 
 struct NetWork {
     int port;
     NetWork(const json11::Json& items);
-    json11::Json ToJson() const;
+    json11::Json toJson() const;
 };
-json11::Json to_json(const NetWork&);
 
 struct Motor {
     std::string type{"none"};
     std::optional<int> address;
-    Motor()=default;
+    Motor() = default;
     Motor(const json11::Json& items);
-    json11::Json ToJson()const;
+    json11::Json toJson() const;
 };
-json11::Json to_json(const Motor&);
 
 struct Setting {
     //フィールド
@@ -34,9 +32,8 @@ struct Setting {
     Setting(const json11::Json& items);
     Setting(const Setting&) = default;
     ~Setting() = default;
+    json11::Json toJson()const;
 };
- json11::Json to_json(const Setting&) ;
-
 
 }  // namespace Boot
 

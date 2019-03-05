@@ -36,5 +36,5 @@ Application::Application(int argc, char** argv) {
 }
 
 Application::~Application() {
-    json11::save(Boot::to_json(*setting), setting_path);
+    json11::save(setting->toJson(), setting_path);
 }

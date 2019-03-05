@@ -8,15 +8,16 @@ using namespace json11;
 
 
 NetWork::NetWork(const json11::Json& items) : port(get_int(items, "port").value_or(40000)) {}
-Json to_json(const NetWork& net) {
-    return Json::object{{"port", net.port}};
+
+json11::Json NetWork::toJson() const{
+    return Json::object{{"port", port}};
 }
 
 Motor::Motor(const json11::Json& items)
     : type(get_string(items, "type").value_or("none")), address(get_int(items, "address")) {}
 
-json11::Json to_json(const Motor& motor) {
-    return json11::Json::object{{"type", motor.type}, {"address",json11::to_json(motor.address)}};
+json11::Json Motor::toJson()const {
+    return json11::Json::object{{"type", type}, {"address",json11::to_json(address)}};
 }
 
 Setting::Setting(const json11::Json& items) : network(get_object(items, "network").value_or(get_dummy())) {
@@ -33,8 +34,8 @@ Setting::Setting(const json11::Json& items) : network(get_object(items, "network
         motors["demo"]=mtr;
     }
 }
-json11::Json to_json(const Setting& set) {
-    return Json::object{{"network", to_json(set.network)}};
+json11::Json Setting::toJson()const {
+    return Json::object{{"network", network.toJson()}};
 }
 
 }  // namespace Boot
