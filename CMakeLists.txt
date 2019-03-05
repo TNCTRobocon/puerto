@@ -17,9 +17,9 @@ add_executable(puerto
 )
 include_directories(.)
 add_subdirectory(boot)
-add_subdirectory(utils)
+add_subdirectory(json11)
 add_subdirectory(net)
-target_link_libraries(puerto boot utils net)
+target_link_libraries(puerto boot json11 net)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

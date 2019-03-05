@@ -5,7 +5,7 @@
 #include "boot/flags.hpp"
 #include "net/motors.hpp"
 #include "net/server.hpp"
-#include "utils/json11_helper.hpp"
+#include "json11/json11_helper.hpp"
 using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
