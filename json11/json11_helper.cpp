@@ -2,8 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-namespace Utils {
-using namespace json11;
+namespace json11 {
+
 const Json::object& get_dummy() {
     static const Json::object result;
     return result;

@@ -26,15 +26,15 @@ Application::Application(int argc, char** argv) {
     flag.Add("config", setting_path, "設定ファイルの場所");
     flag.Parse(argc, argv);
     path = flag.GetPath();
-    auto it = Utils::load(setting_path);
+    auto it = json11::load(setting_path);
     if (!it) {
         std::cerr << it.GetLeft() << std::endl;
         std::cerr << "[Info] load default setting" << std::endl;
-        it.Reset(Utils::get_dummy());
+        it.Reset(json11::get_dummy());
     }
     setting = std::make_shared<Boot::Setting>(it.GetRight());
 }
 
 Application::~Application() {
-    Utils::save(Boot::to_json(*setting), setting_path);
+    json11::save(Boot::to_json(*setting), setting_path);
 }
