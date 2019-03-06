@@ -3,14 +3,13 @@
 #include <thread>
 #include <zmq.hpp>
 #include "boot/flags.hpp"
-#include "net/motors.hpp"
-#include "net/server.hpp"
+#include "net/service.hpp"
 #include "json11/json11_helper.hpp"
 using namespace std;
 int main(int argc, char** argv) {
     Application app(argc, argv);
     auto& setting = app.setting;
-    //Net::Server server("*",setting->network.port);
+    Net::Service service("*",setting->network.port);
     {
         string dummy;
         std::cout << "run until pressing any key" << std::endl;
