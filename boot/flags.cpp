@@ -2,6 +2,7 @@
 #include <iostream>
 #include <istream>
 #include <sstream>
+#include <stdlib.h>
 using namespace std;
 namespace Boot {
 
@@ -10,8 +11,10 @@ void FlagBool::Set(const std::string& inst) {
         value = true;
     } else if (inst == "false") {
         value = false;
-    } else {
-        value = stoi(inst) != 0;
+    } else if (inst.empty()){
+        value=true;
+    }else{
+        value =stoi(inst);
     }
 }
 
@@ -33,9 +36,10 @@ void Flags::Parse(int argc, char** argv) {
             }
             //検索
             if (key == "help") {
-                for (auto pair : flags) {
-                    cout << pair.first << "\t" << pair.second->GetUsage();
+                for (auto [name,usage] : flags) {
+                    cout << name << "\t" << usage->GetUsage()<<endl;
                 }
+                exit(0);
             } else if (auto it = flags.find(key); it != flags.end()) {
                 it->second->Set(value);
             }

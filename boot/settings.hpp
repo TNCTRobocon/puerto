@@ -11,6 +11,7 @@
 namespace Boot {
 
 struct NetWork {
+    std::string host;
     int port;
     NetWork(const json11::Json& items);
     json11::Json toJson() const;
